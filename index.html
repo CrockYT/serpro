@@ -9,6 +9,11 @@
   <meta property="og:image" content="https://i.imgur.com/oGPxBBy.png">
   <title>Serpro</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
   <style>
     :root {
       --primary-color: #007bff;
@@ -188,6 +193,19 @@
   </div>
 
   <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDSFbp0yTxLNfo24ulSbQkcZ03g4u7IVZE",
+      authDomain: "serpro-data.firebaseapp.com",
+      projectId: "serpro-data",
+      storageBucket: "serpro-data.firebasestorage.app",
+      messagingSenderId: "20618430351",
+      appId: "1:20618430351:web:7cd7c55e79625c14f92dfa",
+      measurementId: "G-HX18DYPNH4"
+    };
+    
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore(app);
+
     const fileInput = document.getElementById('fileInput');
     const propertiesTable = document.getElementById('propertiesTable');
     const propertiesTableBody = propertiesTable.querySelector('tbody');
@@ -317,30 +335,34 @@
     });
 
     shareButton.addEventListener('click', () => {
-      const base64Data = btoa(JSON.stringify(state.properties));
+      const base64 = btoa(JSON.stringify(state.properties));
 
-      fetch('https://ser.cromichan-net.workers.dev/generate-link', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ data: base64Data })
-      })
-      .then(response => response.json())
-      .then(data => {
-        const shortLink = data.url;
-        alert(`短縮URL: ${shortLink}`);
-      })
-      .catch(error => {
-        console.error('エラー:', error);
-        alert('リンク生成に失敗しました。');
+      const shortKey = generateShortKey();
+
+      localStorage.setItem(shortKey, base64);
+
+      const shortUrl = `${location.origin}${location.pathname}?share=${shortKey}`;
+
+      navigator.clipboard.writeText(shortUrl).then(() => {
+        alert('短縮された共有リンクをコピーしました！');
       });
     });
+
+    function generateShortKey() {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let shortKey = '';
+      for (let i = 0; i < 6; i++) {
+        shortKey += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return shortKey;
+    }
 
     const query = new URLSearchParams(location.search);
     if (query.has('share')) {
       const shortKey = query.get('share');
       const base64 = localStorage.getItem(shortKey);
+
+  // データが存在する場合
       if (base64) {
         state.properties = JSON.parse(atob(base64));
         updateUI();
