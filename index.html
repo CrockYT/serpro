@@ -201,7 +201,19 @@
       const config = await response.json();
       return config;
     }
-  
+
+    const fileInput = document.getElementById('fileInput');
+    const propertiesTable = document.getElementById('propertiesTable');
+    const propertiesTableBody = propertiesTable.querySelector('tbody');
+    const saveButton = document.getElementById('saveButton');
+    const downloadButton = document.getElementById('downloadButton');
+    const shareButton = document.getElementById('shareButton');
+    const loadPresetButton = document.getElementById('loadPresetButton');
+    const themeToggle = document.getElementById('themeToggle');
+    const dropArea = document.getElementById('dropArea');
+    const dropText = document.getElementById('dropText');
+    const state = { properties: {} };
+
     getFirebaseConfig().then(firebaseConfig => {
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
@@ -224,19 +236,6 @@
     }).catch(error => {
       console.error("Firebaseの設定の取得または初期化中にエラーが発生しました:", error);
     });
-  </script>  
-  <script>
-    const fileInput = document.getElementById('fileInput');
-    const propertiesTable = document.getElementById('propertiesTable');
-    const propertiesTableBody = propertiesTable.querySelector('tbody');
-    const saveButton = document.getElementById('saveButton');
-    const downloadButton = document.getElementById('downloadButton');
-    const shareButton = document.getElementById('shareButton');
-    const loadPresetButton = document.getElementById('loadPresetButton');
-    const themeToggle = document.getElementById('themeToggle');
-    const dropArea = document.getElementById('dropArea');
-    const dropText = document.getElementById('dropText');
-    const state = { properties: {} };
 
     dropArea.addEventListener('dragover', (event) => {
       event.preventDefault();
