@@ -202,6 +202,15 @@
       return config;
     }
 
+    async function initFirebase() {
+      const config = await getFirebaseConfig();
+      const app = initializeApp(config);
+      const firestore = getFirestore(app);
+      return firestore;
+    }
+
+    const firestore = await initFirebase();
+
     const fileInput = document.getElementById('fileInput');
     const propertiesTable = document.getElementById('propertiesTable');
     const propertiesTableBody = propertiesTable.querySelector('tbody');
@@ -213,26 +222,6 @@
     const dropArea = document.getElementById('dropArea');
     const dropText = document.getElementById('dropText');
     const state = { properties: {} };
-
-    getFirebaseConfig().then(firebaseConfig => {
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
-
-      shareButton.addEventListener('click', async () => {
-        const base64 = btoa(JSON.stringify(state.properties));
-        const shortKey = generateShortKey();
-
-        localStorage.setItem(shortKey, base64);
-
-        try {
-          const docRef = await addDoc(collection(db, 'properties'), { properties: state.properties });
-          const shortUrl = `${location.origin}${location.pathname}?share=${docRef.id}`;
-          navigator.clipboard.writeText(shortUrl).then(() => alert('短縮された共有リンクをコピーしました！'));
-        } catch (error) {
-          console.error('Firestoreエラー:', error);
-        }
-      });
-    });
 
     fileInput.addEventListener('change', handleFileSelect);
 
@@ -292,6 +281,11 @@
         console.error('Firestore読み込みエラー:', error);
       }
     });
+
+    // ショートリンク生成用のランダムキー生成関数
+    function generateShortKey() {
+      return Math.random().toString(36).substr(2, 8);
+    }
 
     dropArea.addEventListener('dragover', (event) => {
       event.preventDefault();
@@ -409,6 +403,16 @@
       link.click();
     });
 
+    shareButton.addEventListener('click', async () => {
+      const shortKey = generateShortKey();
+      const docRef = await addDoc(collection(firestore, 'links'), {
+        key: shortKey,
+        properties: state.properties
+      });
+      const shortUrl = `${location.origin}${location.pathname}?share=${shortKey}`;
+      navigator.clipboard.writeText(shortUrl).then(() => alert('短縮された共有リンクをコピーしました！'));
+    });
+
     function generateShortKey() {
       const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let shortKey = '';
@@ -416,6 +420,19 @@
         shortKey += chars.charAt(Math.floor(Math.random() * chars.length));
       }
       return shortKey;
+    }
+
+    const query = new URLSearchParams(location.search);
+    if (query.has('share')) {
+      const shortKey = query.get('share');
+      const docRef = doc(firestore, 'links', shortKey);
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        state.properties = docSnap.data().properties;
+        updateUI();
+      } else {
+        alert('指定されたリンクは無効です');
+      }
     }
   </script>
 </body>
