@@ -236,6 +236,36 @@
       console.error('Firebaseの設定の取得または初期化中にエラーが発生しました:', error);
     });
 
+    const urlParams = new URLSearchParams(window.location.search);
+      const shareKey = urlParams.get('share');
+
+      if (shareKey) {
+        const docRef = doc(db, 'properties', shareKey);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          state.properties = data.properties;
+
+          displayProperties(state.properties);
+        } else {
+          console.error("指定されたドキュメントが存在しません");
+        }
+      }
+
+      function displayProperties(properties) {
+        propertiesTable.classList.add('visible');
+        propertiesTableBody.innerHTML = '';
+        for (const [key, value] of Object.entries(properties)) {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${key}</td>
+            <td><input type="text" value="${value}" data-key="${key}" /></td>
+          `;
+          propertiesTableBody.appendChild(tr);
+        }
+      }
+
     dropArea.addEventListener('dragover', (event) => {
       event.preventDefault();
       dropArea.classList.add('dropping');
