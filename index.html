@@ -214,27 +214,29 @@
     const dropText = document.getElementById('dropText');
     const state = { properties: {} };
 
+    // Firebaseの初期化
     getFirebaseConfig().then(firebaseConfig => {
-      const app = initializeApp(firebaseConfig);
-      const db = getFirestore(app);
+      const app = initializeApp(firebaseConfig); // Firebaseの初期化
+      const db = getFirestore(app); // Firestoreインスタンスの取得
+
+      // Firestoreのデータ追加処理
       shareButton.addEventListener('click', async () => {
-        const base64 = btoa(JSON.stringify(state.properties));
-        const shortKey = generateShortKey();
+        const base64 = btoa(JSON.stringify(state.properties)); // Base64でエンコードしたデータ
+        const shortKey = generateShortKey(); // 短縮キーを生成
 
-        localStorage.setItem(shortKey, base64);
+        localStorage.setItem(shortKey, base64); // LocalStorageに保存
 
-        await db.collection("properties").add({
-          properties: state.properties
-        });
-
-        const shortUrl = `${location.origin}${location.pathname}?share=${shortKey}`;
-        navigator.clipboard.writeText(shortUrl).then(() => alert('短縮された共有リンクをコピーしました！'));
+        try {
+          // Firestoreにデータを追加
+          await addDoc(collection(db, 'properties'), { properties: state.properties });
+          const shortUrl = `${location.origin}${location.pathname}?share=${shortKey}`;
+          navigator.clipboard.writeText(shortUrl).then(() => alert('短縮された共有リンクをコピーしました！'));
+        } catch (error) {
+          console.error('Firestoreへのデータ保存中にエラーが発生しました:', error);
+        }
       });
-  
-      console.log("Firebaseが正常に初期化されました");
-  
     }).catch(error => {
-      console.error("Firebaseの設定の取得または初期化中にエラーが発生しました:", error);
+      console.error('Firebaseの設定の取得または初期化中にエラーが発生しました:', error);
     });
 
     dropArea.addEventListener('dragover', (event) => {
