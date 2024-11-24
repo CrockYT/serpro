@@ -3,67 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Minecraft Server Properties Editor</title>
+  <link rel="icon" href="https://i.imgur.com/oGPxBBy.png" type="image/png">
+  <meta property="og:title" content="Serpro">
+  <meta property="og:description" content="Minecraftのサーバープロパティファイルを簡単に編集できるツールです。/n 最新アップデート 11/25">
+  <meta property="og:image" content="https://i.imgur.com/oGPxBBy.png">
+  <title>Serpro</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
+    :root {
+      --primary-color: #007bff;
+      --primary-hover-color: #0056b3;
+      --bg-color: #f9f9f9;
+      --text-color: #333;
+      --table-bg: #fff;
+      --table-border: #ddd;
+      --button-bg: var(--primary-color);
+      --button-hover-bg: var(--primary-hover-color);
+    }
+
+    [data-theme="dark"] {
+      --primary-color: #1e90ff;
+      --primary-hover-color: #104e8b;
+      --bg-color: #2e2e2e;
+      --text-color: #f1f1f1;
+      --table-bg: #3e3e3e;
+      --table-border: #555;
+      --button-bg: var(--primary-color);
+      --button-hover-bg: var(--primary-hover-color);
+    }
+
     body {
       font-family: Arial, sans-serif;
       margin: 20px;
-      background-color: #f9f9f9;
+      background-color: var(--bg-color);
+      color: var(--text-color);
     }
 
     h1 {
       text-align: center;
-      color: #333;
+      color: var(--text-color);
     }
 
     input[type="file"] {
       display: block;
-      margin: 0 auto 20px auto;
+      margin: 20px auto;
       padding: 10px;
-      border: 1px solid #ccc;
+      border: 1px solid var(--table-border);
       border-radius: 4px;
       cursor: pointer;
       max-width: 300px;
-    }
-
-    .loading {
-      display: none;
-      text-align: center;
-      margin: 20px 0;
-    }
-
-    .loading span {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      margin: 0 5px;
-      background-color: #007bff;
-      border-radius: 50%;
-      animation: bounce 1.4s infinite ease-in-out both;
-    }
-
-    .loading span:nth-child(2) {
-      animation-delay: -0.32s;
-    }
-
-    .loading span:nth-child(3) {
-      animation-delay: -0.16s;
-    }
-
-    @keyframes bounce {
-      0%, 80%, 100% {
-        transform: scale(0);
-      }
-      40% {
-        transform: scale(1);
-      }
     }
 
     table {
       width: 100%;
       border-collapse: collapse;
       margin-bottom: 20px;
-      background-color: #fff;
+      background-color: var(--table-bg);
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       opacity: 0;
       transform: translateY(10px);
@@ -76,23 +71,24 @@
     }
 
     th, td {
-      border: 1px solid #ddd;
+      border: 1px solid var(--table-border);
       padding: 10px;
       text-align: left;
     }
 
     th {
-      background-color: #f4f4f4;
-      font-weight: bold;
+      background-color: var(--primary-color);
+      color: #fff;
     }
 
     td input, td select {
       width: 95%;
       padding: 5px;
-      margin: 0;
-      border: 1px solid #ccc;
+      border: 1px solid var(--table-border);
       border-radius: 4px;
       font-size: 14px;
+      background: var(--table-bg);
+      color: var(--text-color);
     }
 
     .button-group {
@@ -105,7 +101,7 @@
       margin: 10px;
       border: none;
       border-radius: 4px;
-      background-color: #007bff;
+      background-color: var(--button-bg);
       color: white;
       font-size: 14px;
       cursor: pointer;
@@ -113,12 +109,32 @@
     }
 
     button:hover {
-      background-color: #0056b3;
+      background-color: var(--button-hover-bg);
     }
 
     button:disabled {
       background-color: #ccc;
       cursor: not-allowed;
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background-color: transparent;
+      border: none;
+      color: var(--primary-color);
+      font-size: 24px;
+      cursor: pointer;
+    }
+
+    .motd-preview {
+      margin-top: 10px;
+      padding: 10px;
+      border: 1px solid var(--table-border);
+      border-radius: 4px;
+      background-color: #f0f0f0;
+      color: #555;
     }
 
     @media (max-width: 600px) {
@@ -138,13 +154,13 @@
   </style>
 </head>
 <body>
+  <button class="theme-toggle" id="themeToggle" aria-label="テーマ切り替え">
+    <i class="fas fa-moon"></i>
+  </button>
+
   <h1>Minecraft Server Properties Editor</h1>
 
   <input type="file" id="fileInput" accept=".properties">
-
-  <div class="loading" id="loadingIndicator">
-    <span></span><span></span><span></span>
-  </div>
 
   <table id="propertiesTable" class="hidden">
     <thead>
@@ -153,14 +169,14 @@
         <th>値</th>
       </tr>
     </thead>
-    <tbody>
-      <!-- プロパティ -->
-    </tbody>
+    <tbody></tbody>
   </table>
-  
+
   <div class="button-group">
     <button id="saveButton" disabled>保存</button>
     <button id="downloadButton" disabled>ダウンロード</button>
+    <button id="shareButton" disabled>共有リンク生成</button>
+    <button id="loadPresetButton">プリセット読み込み</button>
   </div>
 
   <script>
@@ -169,75 +185,41 @@
     const propertiesTableBody = propertiesTable.querySelector('tbody');
     const saveButton = document.getElementById('saveButton');
     const downloadButton = document.getElementById('downloadButton');
-    const loadingIndicator = document.getElementById('loadingIndicator');
+    const shareButton = document.getElementById('shareButton');
+    const loadPresetButton = document.getElementById('loadPresetButton');
+    const themeToggle = document.getElementById('themeToggle');
+    const motdTextPreview = document.getElementById('motdTextPreview');
+    const state = { properties: {} };
 
-    let properties = {};
-
-    fileInput.addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        showLoading();
-        const reader = new FileReader();
-        reader.onload = () => {
-          parseProperties(reader.result);
-          hideLoading();
-        };
-        reader.readAsText(file);
-      }
-    });
-
-    function showLoading() {
-      loadingIndicator.style.display = 'block';
-      propertiesTable.classList.remove('visible');
-    }
-
-    function hideLoading() {
-      loadingIndicator.style.display = 'none';
-      propertiesTable.classList.add('visible');
-    }
-
-    function parseProperties(content) {
-      properties = {};
-      const lines = content.split('\n');
-      propertiesTableBody.innerHTML = '';
-      lines.forEach(line => {
-        const trimmedLine = line.trim();
-        if (trimmedLine && !trimmedLine.startsWith('#')) {
-          const [key, ...value] = trimmedLine.split('=');
-          if (key && value.length) {
-            const valueString = value.join('=').trim();
-            properties[key.trim()] = valueString;
-            addRow(key.trim(), valueString);
-          }
-        }
-      });
-      saveButton.disabled = false;
-      downloadButton.disabled = false;
-    }
-
-    function addRow(key, value) {
+    const addRow = (key, value) => {
       const row = document.createElement('tr');
       const keyCell = document.createElement('td');
       const valueCell = document.createElement('td');
 
       keyCell.textContent = key;
 
-      const inputField = document.createElement('input');
-      inputField.value = value;
-
-      if (value === 'true' || value === 'false') {
+      if (key.toLowerCase() === 'motd') {
+        const inputField = document.createElement('input');
+        inputField.value = value;
+        inputField.addEventListener('input', () => {
+          state.properties[key] = inputField.value;
+        });
+        valueCell.appendChild(inputField);
+      } else if (value === 'true' || value === 'false') {
         const select = document.createElement('select');
         select.innerHTML = `
           <option value="true" ${value === 'true' ? 'selected' : ''}>True</option>
           <option value="false" ${value === 'false' ? 'selected' : ''}>False</option>
         `;
         select.addEventListener('change', () => {
-          properties[key] = select.value;
+          state.properties[key] = select.value;
         });
         valueCell.appendChild(select);
       } else {
+        const inputField = document.createElement('input');
+        inputField.value = value;
         inputField.addEventListener('input', () => {
-          properties[key] = inputField.value;
+          state.properties[key] = inputField.value;
         });
         valueCell.appendChild(inputField);
       }
@@ -245,22 +227,78 @@
       row.appendChild(keyCell);
       row.appendChild(valueCell);
       propertiesTableBody.appendChild(row);
-    }
+    };
+
+    const updateUI = () => {
+      propertiesTableBody.innerHTML = '';
+      Object.entries(state.properties).forEach(([key, value]) => addRow(key, value));
+      propertiesTable.classList.add('visible');
+      saveButton.disabled = false;
+      downloadButton.disabled = false;
+      shareButton.disabled = false;
+    };
+
+    const loadFile = content => {
+      content.split('\n').forEach(line => {
+        const [key, ...value] = line.split('=');
+        if (key && value.length) state.properties[key.trim()] = value.join('=').trim();
+      });
+      updateUI();
+    };
+
+    fileInput.addEventListener('change', event => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = () => loadFile(reader.result);
+        reader.readAsText(file);
+      }
+    });
 
     saveButton.addEventListener('click', () => {
-      alert('保存機能は未実装です。');
+      const name = prompt('プリセット名を入力してください:');
+      if (!name) return;
+      const presets = JSON.parse(localStorage.getItem('presets') || '{}');
+      presets[name] = state.properties;
+      localStorage.setItem('presets', JSON.stringify(presets));
+      alert(`プリセット「${name}」を保存しました！`);
+    });
+
+    loadPresetButton.addEventListener('click', () => {
+      const presets = JSON.parse(localStorage.getItem('presets') || '{}');
+      const name = prompt(`プリセット名を選択してください:\n${Object.keys(presets).join('\n')}`);
+      if (presets[name]) {
+        state.properties = presets[name];
+        updateUI();
+      } else alert('指定されたプリセットは存在しません。');
     });
 
     downloadButton.addEventListener('click', () => {
-      const content = Object.keys(properties)
-        .map(key => `${key}=${properties[key]}`)
-        .join('\n');
-      const blob = new Blob([content], { type: 'text/plain' });
+      const blob = new Blob([Object.entries(state.properties).map(([k, v]) => `${k}=${v}`).join('\n')], { type: 'text/plain' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
       link.download = 'server.properties';
       link.click();
     });
+
+    shareButton.addEventListener('click', () => {
+      const base64 = btoa(JSON.stringify(state.properties));
+      const url = `${location.origin}${location.pathname}?preset=${encodeURIComponent(base64)}`;
+      navigator.clipboard.writeText(url).then(() => alert('共有リンクをコピーしました！'));
+    });
+
+    themeToggle.addEventListener('click', () => {
+      const theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+      document.body.setAttribute('data-theme', theme);
+      themeToggle.innerHTML = `<i class="fas fa-${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
+    });
+
+    const query = new URLSearchParams(location.search);
+    if (query.has('preset')) {
+      const decoded = atob(query.get('preset'));
+      state.properties = JSON.parse(decoded);
+      updateUI();
+    }
   </script>
 </body>
 </html>
