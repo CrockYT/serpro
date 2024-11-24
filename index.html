@@ -20,7 +20,9 @@
       --table-border: #ddd;
       --button-bg: var(--primary-color);
       --button-hover-bg: var(--primary-hover-color);
-    }
+      --drop-area-bg: #f9f9f9;
+      --drop-area-dropping-bg: #e0e0e0;
+    } 
 
     [data-theme="dark"] {
       --primary-color: #1e90ff;
@@ -31,13 +33,17 @@
       --table-border: #555;
       --button-bg: var(--primary-color);
       --button-hover-bg: var(--primary-hover-color);
+      --drop-area-bg: #3e3e3e;
+      --drop-area-dropping-bg: #555;
     }
 
-    body {
+    html, body {
       font-family: Arial, sans-serif;
+      padding: 0;
       margin: 20px;
       background-color: var(--bg-color);
       color: var(--text-color);
+      background-size: cover;
     }
 
     h1 {
@@ -46,11 +52,11 @@
     }
     
     .drop-area {
-      background-color: #f9f9f9;
+      background-color: var(--drop-area-bg);
     }
 
     .drop-area.dropping {
-      background-color: #e0e0e0;
+      background-color: var(--drop-area-dropping-bg);
     }
 
     input[type="file"] {
@@ -394,6 +400,32 @@
       link.href = URL.createObjectURL(blob);
       link.download = 'server.properties';
       link.click();
+    });
+
+    function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
+
+      if (theme === 'dark') {
+        document.documentElement.style.backgroundColor = "#2e2e2e";
+      } else {
+        document.documentElement.style.backgroundColor = "#f9f9f9";
+      }
+
+      localStorage.setItem('theme', theme);
+
+      themeToggle.innerHTML = `<i class="fas fa-${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
+    }
+
+    let currentTheme = localStorage.getItem('theme') || 'light';
+    setTheme(currentTheme);
+
+    themeToggle.addEventListener('click', () => {
+      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      currentTheme = newTheme;
+
+      setTheme(newTheme);
+
+      document.documentElement.style.transition = 'background-color 0.5s ease, color 0.5s ease';
     });
 
     shareButton.addEventListener('click', async () => {
