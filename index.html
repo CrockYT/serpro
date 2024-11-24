@@ -190,10 +190,11 @@
     <button id="loadPresetButton">プリセット読み込み</button>
   </div>
 
-  <script>
+  <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
     import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
-    
+  </script>
+  <script>
     async function getFirebaseConfig() {
       const response = await fetch('https://ser.cromichan-net.workers.dev/', {
         method: 'GET'
