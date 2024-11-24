@@ -418,17 +418,18 @@
     }
 
     const query = new URLSearchParams(location.search);
-    if (query.has('share')) {
-      const shortKey = query.get('share');
-      const docRef = doc(firestore, 'links', shortKey);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        state.properties = docSnap.data().properties;
-        updateUI();
-      } else {
-        alert('指定されたリンクは無効です');
+      if (query.has('share')) {
+        const shortKey = query.get('share');
+        const q = query(collection(firestore, 'links'), where('key', '==', shortKey));
+        const querySnapshot = await getDocs(q);
+        if (!querySnapshot.empty) {
+          const doc = querySnapshot.docs[0];
+          state.properties = doc.data().properties;
+          updateUI();
+        } else {
+          alert('指定されたリンクは無効です');
+        }
       }
-    }
   </script>
 </body>
 </html>
