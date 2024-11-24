@@ -316,26 +316,30 @@
       link.click();
     });
 
-    shareButton.addEventListener('click', () => {
-      const base64 = btoa(JSON.stringify(state.properties));
+    shareButton.addEventListener('click', async () => {
+      try {
+        const base64 = btoa(JSON.stringify(state.properties));
 
-      const shortKey = generateShortKey();
+        const response = await fetch('https://ser.cromichan-net.workers.dev/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(state.properties),
+        });
 
-      localStorage.setItem(shortKey, base64);
+        const data = await response.json();
 
-      const shortUrl = `${location.origin}${location.pathname}?share=${shortKey}`;
-
-      navigator.clipboard.writeText(shortUrl).then(() => alert('短縮された共有リンクをコピーしました！'));
-    });
-
-    function generateShortKey() {
-      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-      let shortKey = '';
-      for (let i = 0; i < 6; i++) {
-        shortKey += chars.charAt(Math.floor(Math.random() * chars.length));
+        if (data.url) {
+          navigator.clipboard.writeText(data.url).then(() => {
+            alert('共有リンクをコピーしました！');
+          });
+        } else {
+          alert('リンク生成に失敗しました');
+        }
+      } catch (error) {
+        console.error('エラー:', error);
+        alert('共有リンクの生成中にエラーが発生しました');
       }
-      return shortKey;
-    }
+    });
 
     const query = new URLSearchParams(location.search);
     if (query.has('share')) {
