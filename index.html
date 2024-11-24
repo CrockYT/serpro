@@ -43,6 +43,14 @@
       text-align: center;
       color: var(--text-color);
     }
+    
+    .drop-area {
+      background-color: #f9f9f9;
+    }
+
+    .drop-area.dropping {
+      background-color: #e0e0e0;
+    }
 
     input[type="file"] {
       display: block;
@@ -153,12 +161,12 @@
     }
   </style>
 </head>
-<body>
+<body id="dropArea" class="drop-area">
   <button class="theme-toggle" id="themeToggle" aria-label="テーマ切り替え">
     <i class="fas fa-moon"></i>
   </button>
 
-  <h1>Minecraft Server Properties Editor</h1>
+  <h1>Serpro</h1>
 
   <input type="file" id="fileInput" accept=".properties">
 
@@ -188,8 +196,35 @@
     const shareButton = document.getElementById('shareButton');
     const loadPresetButton = document.getElementById('loadPresetButton');
     const themeToggle = document.getElementById('themeToggle');
-    const motdTextPreview = document.getElementById('motdTextPreview');
+    const dropArea = document.getElementById('dropArea');
+    const dropText = document.getElementById('dropText');
     const state = { properties: {} };
+
+    dropArea.addEventListener('dragover', (event) => {
+      event.preventDefault();
+      dropArea.classList.add('dropping');
+      dropText.textContent = 'ここにファイルをドロップしてください';
+    });
+
+    dropArea.addEventListener('dragleave', () => {
+      dropArea.classList.remove('dropping');
+      dropText.textContent = 'ファイルを読み込む';
+    });
+
+    dropArea.addEventListener('drop', (event) => {
+      event.preventDefault();
+      const file = event.dataTransfer.files[0];
+      if (file && file.name.endsWith('.properties')) {
+        const reader = new FileReader();
+        reader.onload = () => loadFile(reader.result);
+        reader.readAsText(file);
+      } else {
+        alert('「.properties」ファイルをドロップしてください');
+      }
+
+      dropArea.classList.remove('dropping');
+      dropText.textContent = 'ファイルを読み込む';
+    });
 
     const addRow = (key, value) => {
       const row = document.createElement('tr');
@@ -283,9 +318,26 @@
 
     shareButton.addEventListener('click', () => {
       const base64 = btoa(JSON.stringify(state.properties));
-      const url = `${location.origin}${location.pathname}?preset=${encodeURIComponent(base64)}`;
+
+      const shortKey = generateShortKey();
+
+      localStorage.setItem(shortKey, base64);
+
+      // 短縮URLを生成
+      const url = `${location.origin}${location.pathname}?share=${shortKey}`;
+
       navigator.clipboard.writeText(url).then(() => alert('共有リンクをコピーしました！'));
     });
+
+    // ランダムな短縮キーを生成する関数
+    function generateShortKey() {
+      const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      let shortKey = '';
+      for (let i = 0; i < 6; i++) {
+        shortKey += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return shortKey;
+    }
 
     themeToggle.addEventListener('click', () => {
       const theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
