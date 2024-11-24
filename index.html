@@ -320,7 +320,7 @@
       try {
         const base64 = btoa(JSON.stringify(state.properties));
 
-        const response = await fetch('https://ser.cromichan-net.workers.dev/', {
+        const response = await fetch('https://ser.cromichan-net.workers.dev/generate-link', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(state.properties),
