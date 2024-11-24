@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minecraft Server Properties Editor</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f9f9f9;
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    input[type="file"] {
+      display: block;
+      margin: 0 auto 20px auto;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      cursor: pointer;
+      max-width: 300px;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .loading span {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin: 0 5px;
+      background-color: #007bff;
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out both;
+    }
+
+    .loading span:nth-child(2) {
+      animation-delay: -0.32s;
+    }
+
+    .loading span:nth-child(3) {
+      animation-delay: -0.16s;
+    }
+
+    @keyframes bounce {
+      0%, 80%, 100% {
+        transform: scale(0);
+      }
+      40% {
+        transform: scale(1);
+      }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+
+    table.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f4f4f4;
+      font-weight: bold;
+    }
+
+    td input, td select {
+      width: 95%;
+      padding: 5px;
+      margin: 0;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+
+    .button-group {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      border: none;
+      border-radius: 4px;
+      background-color: #007bff;
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 600px) {
+      th, td {
+        font-size: 14px;
+      }
+
+      td input, td select {
+        font-size: 12px;
+      }
+
+      button {
+        padding: 8px 15px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Minecraft Server Properties Editor</h1>
+
+  <input type="file" id="fileInput" accept=".properties">
+
+  <div class="loading" id="loadingIndicator">
+    <span></span><span></span><span></span>
+  </div>
+
+  <table id="propertiesTable" class="hidden">
+    <thead>
+      <tr>
+        <th>設定項目</th>
+        <th>値</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- プロパティ -->
+    </tbody>
+  </table>
+  
+  <div class="button-group">
+    <button id="saveButton" disabled>保存</button>
+    <button id="downloadButton" disabled>ダウンロード</button>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const propertiesTable = document.getElementById('propertiesTable');
+    const propertiesTableBody = propertiesTable.querySelector('tbody');
+    const saveButton = document.getElementById('saveButton');
+    const downloadButton = document.getElementById('downloadButton');
+    const loadingIndicator = document.getElementById('loadingIndicator');
+
+    let properties = {};
+
+    fileInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        showLoading();
+        const reader = new FileReader();
+        reader.onload = () => {
+          parseProperties(reader.result);
+          hideLoading();
+        };
+        reader.readAsText(file);
+      }
+    });
+
+    function showLoading() {
+      loadingIndicator.style.display = 'block';
+      propertiesTable.classList.remove('visible');
+    }
+
+    function hideLoading() {
+      loadingIndicator.style.display = 'none';
+      propertiesTable.classList.add('visible');
+    }
+
+    function parseProperties(content) {
+      properties = {};
+      const lines = content.split('\n');
+      propertiesTableBody.innerHTML = '';
+      lines.forEach(line => {
+        const trimmedLine = line.trim();
+        if (trimmedLine && !trimmedLine.startsWith('#')) {
+          const [key, ...value] = trimmedLine.split('=');
+          if (key && value.length) {
+            const valueString = value.join('=').trim();
+            properties[key.trim()] = valueString;
+            addRow(key.trim(), valueString);
+          }
+        }
+      });
+      saveButton.disabled = false;
+      downloadButton.disabled = false;
+    }
+
+    function addRow(key, value) {
+      const row = document.createElement('tr');
+      const keyCell = document.createElement('td');
+      const valueCell = document.createElement('td');
+
+      keyCell.textContent = key;
+
+      const inputField = document.createElement('input');
+      inputField.value = value;
+
+      if (value === 'true' || value === 'false') {
+        const select = document.createElement('select');
+        select.innerHTML = `
+          <option value="true" ${value === 'true' ? 'selected' : ''}>True</option>
+          <option value="false" ${value === 'false' ? 'selected' : ''}>False</option>
+        `;
+        select.addEventListener('change', () => {
+          properties[key] = select.value;
+        });
+        valueCell.appendChild(select);
+      } else {
+        inputField.addEventListener('input', () => {
+          properties[key] = inputField.value;
+        });
+        valueCell.appendChild(inputField);
+      }
+
+      row.appendChild(keyCell);
+      row.appendChild(valueCell);
+      propertiesTableBody.appendChild(row);
+    }
+
+    saveButton.addEventListener('click', () => {
+      alert('保存機能は未実装です。');
+    });
+
+    downloadButton.addEventListener('click', () => {
+      const content = Object.keys(properties)
+        .map(key => `${key}=${properties[key]}`)
+        .join('\n');
+      const blob = new Blob([content], { type: 'text/plain' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'server.properties';
+      link.click();
+    });
+  </script>
+</body>
+</html>
