@@ -282,11 +282,6 @@
       }
     });
 
-    // ショートリンク生成用のランダムキー生成関数
-    function generateShortKey() {
-      return Math.random().toString(36).substr(2, 8);
-    }
-
     dropArea.addEventListener('dragover', (event) => {
       event.preventDefault();
       dropArea.classList.add('dropping');
