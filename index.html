@@ -214,12 +214,10 @@
     const dropText = document.getElementById('dropText');
     const state = { properties: {} };
 
-    // Firebaseの設定取得と初期化
     getFirebaseConfig().then(firebaseConfig => {
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
 
-      // 共有リンク生成ボタン
       shareButton.addEventListener('click', async () => {
         const base64 = btoa(JSON.stringify(state.properties));
         const shortKey = generateShortKey();
@@ -236,7 +234,6 @@
       });
     });
 
-    // ファイルが選択されたときに呼ばれる処理
     fileInput.addEventListener('change', handleFileSelect);
 
     async function handleFileSelect(event) {
@@ -283,7 +280,6 @@
       shareButton.disabled = false;
     }
 
-    // プリセット読み込み
     loadPresetButton.addEventListener('click', async () => {
       try {
         const docRef = await getDoc(doc(collection(db, 'properties'), 'sampleDocId'));
@@ -296,11 +292,6 @@
         console.error('Firestore読み込みエラー:', error);
       }
     });
-
-    // ショートリンク生成用のランダムキー生成関数
-    function generateShortKey() {
-      return Math.random().toString(36).substr(2, 8);
-    }
 
     dropArea.addEventListener('dragover', (event) => {
       event.preventDefault();
