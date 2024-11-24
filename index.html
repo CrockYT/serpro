@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="ja" id="dropArea" class="drop-area">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -161,7 +161,7 @@
     }
   </style>
 </head>
-<body id="dropArea" class="drop-area">
+<body>
   <button class="theme-toggle" id="themeToggle" aria-label="テーマ切り替え">
     <i class="fas fa-moon"></i>
   </button>
@@ -323,13 +323,11 @@
 
       localStorage.setItem(shortKey, base64);
 
-      // 短縮URLを生成
-      const url = `${location.origin}${location.pathname}?share=${shortKey}`;
+      const shortUrl = `${location.origin}${location.pathname}?share=${shortKey}`;
 
-      navigator.clipboard.writeText(url).then(() => alert('共有リンクをコピーしました！'));
+      navigator.clipboard.writeText(shortUrl).then(() => alert('短縮された共有リンクをコピーしました！'));
     });
 
-    // ランダムな短縮キーを生成する関数
     function generateShortKey() {
       const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       let shortKey = '';
@@ -339,17 +337,16 @@
       return shortKey;
     }
 
-    themeToggle.addEventListener('click', () => {
-      const theme = document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-      document.body.setAttribute('data-theme', theme);
-      themeToggle.innerHTML = `<i class="fas fa-${theme === 'dark' ? 'sun' : 'moon'}"></i>`;
-    });
-
     const query = new URLSearchParams(location.search);
-    if (query.has('preset')) {
-      const decoded = atob(query.get('preset'));
-      state.properties = JSON.parse(decoded);
-      updateUI();
+    if (query.has('share')) {
+      const shortKey = query.get('share');
+      const base64 = localStorage.getItem(shortKey);
+      if (base64) {
+        state.properties = JSON.parse(atob(base64));
+        updateUI();
+      } else {
+        alert('指定されたリンクは無効です');
+      }
     }
   </script>
 </body>
