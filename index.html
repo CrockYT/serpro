@@ -192,7 +192,7 @@
 
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js';
-    import { getFirestore } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
+    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js';
   
     async function getFirebaseConfig() {
       const response = await fetch('https://ser.cromichan-net.workers.dev/', {
@@ -214,20 +214,17 @@
     const dropText = document.getElementById('dropText');
     const state = { properties: {} };
 
-    // Firebaseの初期化
     getFirebaseConfig().then(firebaseConfig => {
-      const app = initializeApp(firebaseConfig); // Firebaseの初期化
-      const db = getFirestore(app); // Firestoreインスタンスの取得
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
 
-      // Firestoreのデータ追加処理
       shareButton.addEventListener('click', async () => {
-        const base64 = btoa(JSON.stringify(state.properties)); // Base64でエンコードしたデータ
-        const shortKey = generateShortKey(); // 短縮キーを生成
+        const base64 = btoa(JSON.stringify(state.properties));
+        const shortKey = generateShortKey();
 
-        localStorage.setItem(shortKey, base64); // LocalStorageに保存
+        localStorage.setItem(shortKey, base64);
 
         try {
-          // Firestoreにデータを追加
           await addDoc(collection(db, 'properties'), { properties: state.properties });
           const shortUrl = `${location.origin}${location.pathname}?share=${shortKey}`;
           navigator.clipboard.writeText(shortUrl).then(() => alert('短縮された共有リンクをコピーしました！'));
