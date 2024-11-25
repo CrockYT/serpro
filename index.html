@@ -20,7 +20,8 @@
   <title>Serpro</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <link rel="stylesheet" href="https://serpro.crockcore.com/styles.css"
+  <!--<link rel="stylesheet" href="https://serpro.crockcore.com/styles.css">-->
+  <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
@@ -38,6 +39,7 @@
       <thead>
         <tr>
           <th>設定項目</th>
+          <div id="descriptionArea" class="description-area"></div>
         <th>値</th>
         </tr>
       </thead>
@@ -94,6 +96,13 @@
     const dropArea = document.getElementById('dropArea');
     const dropText = document.getElementById('dropText');
     const state = { properties: {} };
+    const descriptionArea = document.getElementById('descriptionArea');
+    const descriptions = {
+      'motd': 'MOTD（Message of the Day）はサーバーに接続した際に表示されるメッセージです。',
+      'max-players': 'サーバーに接続できる最大プレイヤー数を設定します。',
+      'online-mode': 'オンラインモードは、プレイヤーが実際に認証されているかどうかを確認します。',
+      // 他の設定項目も追加
+    };
 
     fileInput.addEventListener('change', handleFileSelect);
 
@@ -192,6 +201,12 @@
         inputField.value = value;
         inputField.addEventListener('input', () => {
           state.properties[key] = inputField.value;
+        });
+        inputField.addEventListener('focus', () => {
+        descriptionArea.textContent = descriptions[key] || '説明がありません。';
+        });
+        inputField.addEventListener('blur', () => {
+        descriptionArea.textContent = '';
         });
         valueCell.appendChild(inputField);
       } else if (value === 'true' || value === 'false') {
