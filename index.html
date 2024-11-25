@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
   <link rel="stylesheet" href="https://serpro.crockcore.com/styles.css">
+  <link rel="stylesheet" href="./styles.css">
 </head>
 
 <body>
@@ -29,6 +30,22 @@
       <i class="fas fa-moon"></i>
     </button>
     <h1>Serpro</h1>
+
+    <div class="update-info" id="updateInfo">
+      <div class="update-info-header">
+          <div>
+              <i class="fas fa-bell icon"></i> アップデート情報
+          </div>
+          <button class="update-info-close" id="closeUpdateInfo">&times;</button>
+      </div>
+      <div class="update-info-body">
+          <p>以下は最新の更新内容です：</p>
+          <ul>
+              <li>ToolTipの追加 *未完成</li>
+              <li>アップデート情報をサイトから見れるようにしました</li>
+          </ul>
+      </div>
+    </div>   
   </header>
 
   <main>
@@ -97,10 +114,11 @@
     const state = { properties: {} };
     const descriptionArea = document.getElementById('descriptionArea');
     const descriptions = {
-      'motd': 'MOTD（Message of the Day）はサーバーに接続した際に表示されるメッセージです。',
+      'allow-flight': 'サーバー内で飛行を可能にするかの設定です。',
+      'allow-nether': 'サーバー起動時にネザーを読み込むかの設定です',
+      'announce-player-achievements': 'プレイヤーが実績を解除した時に',
+      'motd': 'サーバー接続時に表示されるテキストです。',
       'max-players': 'サーバーに接続できる最大プレイヤー数を設定します。',
-      'online-mode': 'オンラインモードは、プレイヤーが実際に認証されているかどうかを確認します。',
-      // 他の設定項目も追加
     };
 
     fileInput.addEventListener('change', handleFileSelect);
@@ -194,6 +212,7 @@
       const valueCell = document.createElement('td');
 
       keyCell.textContent = key;
+      keyCell.innerHTML = `<span class="tooltip">${key}<span class="tooltip-text">${descriptions[key] || '説明がありません。'}</span></span>`;
 
       if (key.toLowerCase() === 'motd') {
         const inputField = document.createElement('input');
@@ -343,5 +362,7 @@
         }
       }
   </script>
+  <script src="https://serpro.crockcore.com/update-info.js"></script>
+  <script src="./update-info.js"></script>
 </body>
 </html>
