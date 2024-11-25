@@ -7,6 +7,16 @@
   <meta property="og:title" content="Serpro">
   <meta property="og:description" content="Minecraftのサーバープロパティファイルを簡単に編集できるツールです。/n 最新アップデート 11/25">
   <meta property="og:image" content="https://i.imgur.com/oGPxBBy.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0000ff">
+  <link rel="icon" href="/icons/icon-192x192.png" type="image/png">
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/service-worker.js')
+        .then(registration => console.log('Service Worker registered:', registration))
+        .catch(error => console.error('Service Worker registration failed:', error));
+    }
+  </script>
   <title>Serpro</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
